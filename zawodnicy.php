@@ -4,17 +4,11 @@ $servername = "localhost";
 $dbUsername = "root";
 $dbPassword = "";
 $dbname = "nba_fanpage";
-
-
 $conn = new mysqli($servername, $dbUsername, $dbPassword, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
-
 $order_by = 'players.name ASC';
-
-
 if (isset($_GET['sort_by'])) {
     if ($_GET['sort_by'] == 'team') {
         $order_by = 'teams.name ASC';
@@ -22,14 +16,18 @@ if (isset($_GET['sort_by'])) {
         $order_by = 'players.position ASC';
     }
 }
-
+$search_query = '';
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = $conn->real_escape_string($_GET['search']);
+    $search_query = "AND players.name LIKE '%$search%'";
+}
 
 $players_sql = "SELECT players.id, players.name AS player_name, players.position, players.number, teams.name AS team_name, teams.logo 
                 FROM players 
                 INNER JOIN teams ON players.team_id = teams.id
+                WHERE 1=1 $search_query
                 ORDER BY $order_by";
 $players_result = $conn->query($players_sql);
-
 
 $teams_sql = "SELECT id, name, logo FROM teams";
 $teams_result = $conn->query($teams_sql);
@@ -65,7 +63,6 @@ $isAdmin = isset($_SESSION['username']) && $_SESSION['username'] === 'admin';
     </header>
 
     <div class="container">
-
         <aside class="left-sidebar">
             <div class="schedule-container">
                 <h3>Drużyny</h3>
@@ -84,42 +81,45 @@ $isAdmin = isset($_SESSION['username']) && $_SESSION['username'] === 'admin';
             </div>
         </aside>
 
-     
+
         <main class="main-content">
-        <div class="title-bar">
+            <div class="title-bar">
     <h2>Zawodnicy</h2>
+
+    <form action="zawodnicy.php" method="GET" class="search-form">
+        <input type="text" name="search" placeholder="Wyszukaj zawodnika..." value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
+        <button type="submit">Szukaj</button>
+    </form>
     <div class="sort-buttons">
         <a href="zawodnicy.php?sort_by=team" class="sort-button">Sortuj wg Drużyny</a>
         <a href="zawodnicy.php?sort_by=position" class="sort-button">Sortuj wg Pozycji</a>
     </div>
 </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Logo Drużyny</th>
+                        <th>Nazwa Zawodnika</th>
+                        <th>Numer</th>
+                        <th>Pozycja</th>
+                        <th>Drużyna</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($player = $players_result->fetch_assoc()): ?>
+                        <tr>
+                            <td><img src="<?php echo $player['logo']; ?>" alt="<?php echo $player['team_name']; ?> Logo"></td>
+                            <td><?php echo $player['player_name']; ?></td>
+                            <td><?php echo $player['number']; ?></td>
+                            <td><?php echo $player['position']; ?></td>
+                            <td><?php echo $player['team_name']; ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Logo Drużyny</th>
-                <th>Nazwa Zawodnika</th>
-                <th>Numer</th>
-                <th>Pozycja</th>
-                <th>Drużyna</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($player = $players_result->fetch_assoc()): ?>
-                <tr>
-                    <td><img src="<?php echo $player['logo']; ?>" alt="<?php echo $player['team_name']; ?> Logo"></td>
-                    <td><?php echo $player['player_name']; ?></td>
-                    <td><?php echo $player['number']; ?></td>
-                    <td><?php echo $player['position']; ?></td>
-                    <td><?php echo $player['team_name']; ?></td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
-    <?php if ($isAdmin): ?>
-        <a href="edit_players.php" class="edit-button">Edytuj zawodników</a>
-    <?php endif; ?>
-</main>
+            
+        </main>
     </div>
 
     <footer>

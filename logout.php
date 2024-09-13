@@ -49,7 +49,7 @@ session_destroy();
         }
     </style>
     <script>
-        // Automatically redirect after 5 seconds
+
         setTimeout(function(){
             window.location.href = 'index.php';
         }, 5000);

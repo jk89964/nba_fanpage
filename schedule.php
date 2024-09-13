@@ -1,18 +1,17 @@
 <?php
-// Połączenie z bazą danych
 $servername = "localhost";
-$username = "root"; // domyślnie 'root' w XAMPP
-$password = ""; // domyślnie brak hasła w XAMPP
-$dbname = "nba_fanpage"; // nazwa Twojej bazy danych
+$username = "root"; 
+$password = ""; 
+$dbname = "nba_fanpage";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Sprawdzenie połączenia
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Pobieranie id drużyny z URL
+
 $team_id = isset($_GET['team_id']) ? $_GET['team_id'] : null;
 
 if (!$team_id) {
@@ -20,7 +19,7 @@ if (!$team_id) {
     exit();
 }
 
-// Pobieranie danych drużyny
+
 $team_sql = "SELECT * FROM teams WHERE id = ?";
 $stmt = $conn->prepare($team_sql);
 $stmt->bind_param("i", $team_id);
@@ -33,7 +32,7 @@ if (!$team) {
     exit();
 }
 
-// Pobieranie meczów dla wybranej drużyny
+
 $games_sql = "SELECT * FROM games WHERE team_id = ? ORDER BY date";
 $stmt = $conn->prepare($games_sql);
 $stmt->bind_param("i", $team_id);
@@ -72,7 +71,7 @@ $games_result = $stmt->get_result();
                         <th>Data</th>
                         <th>Przeciwnik</th>
                         <th>Godzina</th>
-                        <th>Punkty</th> <!-- Nowa kolumna "Punkty" -->
+                        <th>Punkty</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -81,8 +80,7 @@ $games_result = $stmt->get_result();
                             <td><?php echo date('D, M j', strtotime($game['date'])); ?></td>
                             <td><?php echo $game['opponent']; ?></td>
                             <td><?php echo date('g:i A', strtotime($game['time'])); ?></td>
-                            <td><?php echo $game['points']; ?></td> <!-- Wyświetlanie kolumny "Punkty" -->
-                        </tr>
+                            <td><?php echo $game['points']; ?></td>
                     <?php endwhile; ?>
                 </tbody>
             </table>

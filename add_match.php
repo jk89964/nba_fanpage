@@ -56,38 +56,105 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 $conn->close();
 ?>
-
-<!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dodaj Mecz - <?php echo htmlspecialchars($team1['name']); ?></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+      
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        label {
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 8px;
+        }
+        select, input[type="date"], input[type="time"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button[type="submit"] {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #27ae60;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <h1>Dodaj Nowy Mecz dla <?php echo htmlspecialchars($team1['name']); ?></h1>
-    <form method="POST">
-        <label for="team1">Drużyna 1 (Gospodarz):</label>
-        <select name="team1" required>
-            <option value="<?php echo $team1['id']; ?>" selected><?php echo htmlspecialchars($team1['name']); ?></option>
-        </select><br>
 
-        <label for="team2">Drużyna 2 (Gość):</label>
-        <select name="team2" required>
-            <?php while ($team = $teams_result->fetch_assoc()): ?>
-                <option value="<?php echo htmlspecialchars($team['id']); ?>">
-                    <?php echo htmlspecialchars($team['name']); ?>
-                </option>
-            <?php endwhile; ?>
-        </select><br>
+<header>
+    <h1>Dodaj Mecz</h1>
+</header>
 
-        <label for="date">Data:</label>
-        <input type="date" name="date" required><br>
+<div class="container">
+    <div class="form-container">
+        <h2>Dodaj Nowy Mecz dla <?php echo htmlspecialchars($team1['name']); ?></h2>
+        <form method="POST">
+            <label for="team1">Drużyna 1 (Gospodarz):</label>
+            <select name="team1" required>
+                <option value="<?php echo $team1['id']; ?>" selected><?php echo htmlspecialchars($team1['name']); ?></option>
+            </select>
 
-        <label for="time">Czas:</label>
-        <input type="time" name="time" required><br>
+            <label for="team2">Drużyna 2 (Gość):</label>
+            <select name="team2" required>
+                <?php while ($team = $teams_result->fetch_assoc()): ?>
+                    <option value="<?php echo htmlspecialchars($team['id']); ?>">
+                        <?php echo htmlspecialchars($team['name']); ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
 
-        <button type="submit">Dodaj Mecz</button>
-    </form>
+            <label for="date">Data:</label>
+            <input type="date" name="date" required>
+
+            <label for="time">Czas:</label>
+            <input type="time" name="time" required>
+
+            <button type="submit">Dodaj Mecz</button>
+        </form>
+    </div>
+</div>
+
+
+
 </body>
 </html>

@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-
 $servername = "localhost";
 $dbUsername = "root";
 $dbPassword = "";
@@ -13,11 +12,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
 $team_id = isset($_GET['team_id']) ? $_GET['team_id'] : null;
 
 if ($team_id) {
-
     $sql = "SELECT name, logo FROM teams WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $team_id);
@@ -34,16 +31,19 @@ if ($team_id) {
     echo "Nie wybrano drużyny.";
     exit();
 }
-
 $matches_sql = "SELECT * FROM matches WHERE team1_id = ? OR team2_id = ?";
 $matches_stmt = $conn->prepare($matches_sql);
 $matches_stmt->bind_param("ii", $team_id, $team_id);
 $matches_stmt->execute();
 $matches_result = $matches_stmt->get_result();
-
-
+$players_sql = "SELECT players.name AS player_name, players.position, players.number 
+                FROM players 
+                WHERE team_id = ?";
+$players_stmt = $conn->prepare($players_sql);
+$players_stmt->bind_param("i", $team_id);
+$players_stmt->execute();
+$players_result = $players_stmt->get_result();
 $isAdmin = isset($_SESSION['username']) && $_SESSION['username'] === 'admin';
-
 $conn->close();
 ?>
 
@@ -75,13 +75,11 @@ $conn->close();
     </header>
 
     <div class="container">
-  
         <aside class="left-sidebar">
             <div class="schedule-container">
                 <h3>Drużyny</h3>
                 <ul class="schedule-list">
                     <?php
-             
                     $conn = new mysqli($servername, $dbUsername, $dbPassword, $dbname);
                     $teams_sql = "SELECT id, name, logo FROM teams";
                     $teams_result = $conn->query($teams_sql);
@@ -103,16 +101,12 @@ $conn->close();
                 </ul>
             </div>
         </aside>
-
-
         <main class="main-content">
             <div class="team-header">
                 <img src="<?php echo htmlspecialchars($team['logo']); ?>" alt="<?php echo htmlspecialchars($team['name']); ?> Logo" class="team-page-logo">
                 <h2><?php echo htmlspecialchars($team['name']); ?></h2>
             </div>
             <h3>Regular Season</h3>
-
-      
             <table class="schedule-table">
                 <thead>
                     <tr>
@@ -132,14 +126,12 @@ $conn->close();
                                 <td><?php echo htmlspecialchars($match['date']); ?></td>
                                 <td>
                                     <?php 
-                                   
                                     if ($match['team1_id'] == $team_id) {
                                         $opponent_id = $match['team2_id'];
                                     } else {
                                         $opponent_id = $match['team1_id'];
                                     }
 
-                              
                                     $opponent_sql = "SELECT name FROM teams WHERE id = ?";
                                     $opponent_stmt = $conn->prepare($opponent_sql);
                                     $opponent_stmt->bind_param("i", $opponent_id);
@@ -168,11 +160,34 @@ $conn->close();
                     <?php endif; ?>
                 </tbody>
             </table>
-
-     
             <?php if ($isAdmin): ?>
                 <a href="add_match.php?team_id=<?php echo $team_id; ?>" class="add-match-btn">Dodaj mecz</a>
             <?php endif; ?>
+            <h3>Zawodnicy drużyny</h3>
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Nazwa Zawodnika</th>
+                        <th>Numer</th>
+                        <th>Pozycja</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($players_result->num_rows > 0): ?>
+                        <?php while ($player = $players_result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($player['player_name']); ?></td>
+                                <td><?php echo htmlspecialchars($player['number']); ?></td>
+                                <td><?php echo htmlspecialchars($player['position']); ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="3">Brak zawodników w tej drużynie.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </main>
     </div>
 
